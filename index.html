@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App 动画效果学习指南</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+<body>
+  <div class="overlay"></div>
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>✨ App 动画指南</h2>
+      <p>从原理到实战的完整手册</p>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html" class="active"><span class="icon">🏠</span> 首页</a>
+      <a href="principles.html"><span class="icon">📖</span> 原理篇</a>
+      <a href="tools.html"><span class="icon">🛠</span> 工具篇</a>
+      <a href="cases.html"><span class="icon">📱</span> 案例篇</a>
+      <a href="react-native.html"><span class="icon">⚛️</span> React Native 篇</a>
+      <a href="delivery.html"><span class="icon">📦</span> 交付篇</a>
+      <a href="advanced.html"><span class="icon">🚀</span> 进阶篇</a>
+    </nav>
+  </aside>
+
+  <header class="mobile-header">
+    <button class="menu-btn" aria-label="菜单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+    <span style="font-weight:600;font-size:.9rem;">✨ App 动画指南</span>
+  </header>
+
+  <main class="main">
+    <div class="content">
+      <div class="hero">
+        <span class="badge">📚 学习指南 v1.0</span>
+        <h1>App 动画效果<br>完全指南</h1>
+        <p>从动画原理、设计工具、标杆案例到 React Native 实战，一份覆盖全链路的动效学习手册。</p>
+        <div class="flow" style="justify-content:center;margin-top:24px;">
+          <span class="flow-step">📖 原理</span><span class="flow-arrow">→</span>
+          <span class="flow-step">🛠 工具</span><span class="flow-arrow">→</span>
+          <span class="flow-step">📱 案例</span><span class="flow-arrow">→</span>
+          <span class="flow-step">⚛️ RN 实战</span><span class="flow-arrow">→</span>
+          <span class="flow-step">📦 交付</span><span class="flow-arrow">→</span>
+          <span class="flow-step">🚀 进阶</span>
+        </div>
+      </div>
+
+      <h2>🗺️ 学习路径</h2>
+      <div class="path-steps">
+        <a href="principles.html" class="path-step fade-on-scroll">
+          <h4>📖 第一章：动画基本原理与分类体系</h4>
+          <p>三大动画范式、缓动函数、迪士尼 12 原则、60fps 性能基础</p>
+        </a>
+        <a href="tools.html" class="path-step fade-on-scroll">
+          <h4>🛠 第二章：动效设计工具与平台</h4>
+          <p>AE/Lottie、Rive、Principle、Framer 对比，灵感网站推荐</p>
+        </a>
+        <a href="cases.html" class="path-step fade-on-scroll">
+          <h4>📱 第三章：优秀 App 动效案例</h4>
+          <p>Apple Music、Discord、Pinterest 标杆案例，GitHub 仓库推荐</p>
+        </a>
+        <a href="react-native.html" class="path-step fade-on-scroll">
+          <h4>⚛️ 第五章：React Native 动效深入</h4>
+          <p>Reanimated 核心、手势动画、共享元素过渡、Lottie 接入</p>
+        </a>
+        <a href="delivery.html" class="path-step fade-on-scroll">
+          <h4>📦 第四章：动效交付流程与工程化</h4>
+          <p>Motion Spec 规范、导出格式对比、各平台代码接入</p>
+        </a>
+        <a href="advanced.html" class="path-step fade-on-scroll">
+          <h4>🚀 进阶：无障碍、Design Token、A/B 测试</h4>
+          <p>prefers-reduced-motion、Motion Token 体系、Flutter 对比、触觉反馈</p>
+        </a>
+      </div>
+
+      <h2>📋 快速参考</h2>
+      <div class="card-grid">
+        <a href="https://easings.net/" target="_blank" class="card">
+          <h4>easings.net</h4>
+          <p>缓动函数可视化速查站</p>
+        </a>
+        <a href="https://lottiefiles.com/" target="_blank" class="card">
+          <h4>LottieFiles</h4>
+          <p>最大 Lottie 动画市场</p>
+        </a>
+        <a href="https://rive.app/" target="_blank" class="card">
+          <h4>Rive</h4>
+          <p>新一代交互式动画工具</p>
+        </a>
+        <a href="https://m3.material.io/styles/motion" target="_blank" class="card">
+          <h4>Material Motion</h4>
+          <p>Google Material Design 动效规范</p>
+        </a>
+        <a href="https://docs.swmansion.com/react-native-reanimated/" target="_blank" class="card">
+          <h4>Reanimated 文档</h4>
+          <p>RN 动画核心库官方文档</p>
+        </a>
+        <a href="https://developer.apple.com/design/human-interface-guidelines/motion" target="_blank" class="card">
+          <h4>Apple HIG Motion</h4>
+          <p>Apple 人机交互指南动效篇</p>
+        </a>
+      </div>
+
+      <footer class="footer">
+        <p>基于调研报告整理 · 所有外部链接均指向原网站 · 2026</p>
+      </footer>
+    </div>
+  </main>
+  <script src="main.js"></script>
+</body>
+</html>

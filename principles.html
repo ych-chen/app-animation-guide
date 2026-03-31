@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原理篇 — App 动画指南</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+<body>
+  <div class="overlay"></div>
+  <aside class="sidebar">
+    <div class="sidebar-header"><a href="index.html"><h2>✨ App 动画指南</h2><p>从原理到实战的完整手册</p></a></div>
+    <nav class="sidebar-nav">
+      <a href="index.html"><span class="icon">🏠</span> 首页</a>
+      <a href="principles.html" class="active"><span class="icon">📖</span> 原理篇</a>
+      <a href="tools.html"><span class="icon">🛠</span> 工具篇</a>
+      <a href="cases.html"><span class="icon">📱</span> 案例篇</a>
+      <a href="react-native.html"><span class="icon">⚛️</span> React Native 篇</a>
+      <a href="delivery.html"><span class="icon">📦</span> 交付篇</a>
+      <a href="advanced.html"><span class="icon">🚀</span> 进阶篇</a>
+    </nav>
+  </aside>
+  <header class="mobile-header">
+    <button class="menu-btn" aria-label="菜单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+    <span style="font-weight:600;font-size:.9rem;">📖 原理篇</span>
+  </header>
+  <main class="main"><div class="content">
+    <div class="chapter-intro">
+      <span class="badge">第一章</span>
+      <h1>动画基本原理与分类体系</h1>
+      <p class="page-desc">三大动画范式、缓动函数与贝塞尔曲线、迪士尼 12 原则在 UI 中的映射、60fps 性能基础。</p>
+    </div>
+
+    <h2>1.1 三大动画范式</h2>
+
+    <h3>帧动画（Frame Animation）</h3>
+    <p>逐帧播放预定义图片序列。适用于 Lottie/GIF 加载动画、表情包等。</p>
+    <ul>
+      <li><strong>实现方式：</strong>Android <code>AnimationDrawable</code>、iOS <code>UIImage</code> 序列、Web Canvas</li>
+      <li><strong>优点：</strong>视觉表现力极强</li>
+      <li><strong>缺点：</strong>资源占用大、不可交互、缩放模糊</li>
+      <li><strong>现代替代：</strong><a href="https://airbnb.io/lottie/" target="_blank">Lottie</a>（基于 Bodymovin 导出 AE 动画为矢量 JSON）</li>
+    </ul>
+
+    <h3>属性动画（Property Animation）</h3>
+    <p>通过起始值和终止值之间插值驱动属性变化，是 UI 动画核心范式。</p>
+    <ul>
+      <li><strong>Android：</strong><code>ObjectAnimator</code>、<code>ValueAnimator</code></li>
+      <li><strong>iOS：</strong><code>UIView.animate(withDuration:)</code>、Core Animation</li>
+      <li><strong>Web：</strong>CSS Transitions/Animations、Web Animations API</li>
+      <li><strong>Flutter：</strong><code>Tween</code> + <code>AnimationController</code></li>
+      <li><strong>React Native：</strong><code>Animated</code> API、Reanimated</li>
+    </ul>
+    <pre><code class="language-javascript">value(t) = lerp(start, end, easing(t / duration))</code></pre>
+
+    <h3>物理动画（Physics-based Animation）</h3>
+    <p>基于物理模拟（弹簧、阻尼、重力）驱动，终点由物理状态自然收敛。</p>
+    <ul>
+      <li><strong>关键参数：</strong>damping（阻尼比）、stiffness（刚度）、mass（质量）、velocity（初始速度）</li>
+      <li><strong>优势：</strong>动画自然有机，可中断并平滑过渡</li>
+      <li><strong>经典实现：</strong>iOS <code>CASpringAnimation</code>、Android <code>SpringAnimation</code>、Facebook POP</li>
+    </ul>
+
+    <h2 class="fade-on-scroll">1.2 缓动函数与贝塞尔曲线</h2>
+
+    <h3>三次贝塞尔曲线</h3>
+    <p>CSS <code>cubic-bezier(x1, y1, x2, y2)</code> 定义控制点 P1、P2，P0=(0,0)，P3=(1,1)。</p>
+    <pre><code class="language-css">/* 常用预设 */
+ease          = cubic-bezier(0.25, 0.1, 0.25, 1.0)   /* CSS 默认 */
+ease-in       = cubic-bezier(0.42, 0.0, 1.0,  1.0)   /* 慢起快停 */
+ease-out      = cubic-bezier(0.0,  0.0, 0.58, 1.0)   /* 快起慢停（UI 最常用） */
+ease-in-out   = cubic-bezier(0.42, 0.0, 0.58, 1.0)   /* 慢起慢停 */
+Material标准  = cubic-bezier(0.4, 0.0, 0.2, 1.0)      /* Google 推荐 */
+iOS 标准曲线  ≈ cubic-bezier(0.25, 0.1, 0.25, 1.0)   /* 接近 ease */</code></pre>
+
+    <div class="tip">
+      <p><strong>实践建议：</strong>UI 元素进场用 <code>ease-out</code>（快入缓停），退场用 <code>ease-in</code>（缓起快退），进出场景用 <code>ease-in-out</code>。</p>
+    </div>
+
+    <h3>弹簧动画参数</h3>
+    <div class="table-wrap"><table>
+      <tr><th>参数</th><th>含义</th><th>典型值</th></tr>
+      <tr><td>stiffness（刚度 k）</td><td>弹簧硬度</td><td>200–1000</td></tr>
+      <tr><td>damping（阻尼比 ζ）</td><td>能量衰减速率</td><td>0.5–1.0（欠阻尼）；&gt;1.0（过阻尼）</td></tr>
+      <tr><td>mass（质量 m）</td><td>影响惯性</td><td>通常 1.0</td></tr>
+    </table></div>
+    <p>iOS 推荐阻尼比 0.7–0.9。</p>
+
+    <h3>常用缓动曲线速查</h3>
+    <div class="table-wrap"><table>
+      <tr><th>名称</th><th>曲线特征</th><th>UI 场景</th></tr>
+      <tr><td><code>easeOut</code></td><td>快速启动，缓慢结束</td><td>元素入场、展开面板</td></tr>
+      <tr><td><code>easeIn</code></td><td>缓慢启动，快速结束</td><td>元素退场、折叠</td></tr>
+      <tr><td><code>easeOutBack</code></td><td>超出目标再回弹</td><td>按钮 pop、强调效果</td></tr>
+      <tr><td><code>easeOutElastic</code></td><td>弹性振荡收敛</td><td>游戏 UI、趣味交互</td></tr>
+      <tr><td><code>easeOutBounce</code></td><td>弹跳效果</td><td>通知弹出、下拉刷新</td></tr>
+    </table></div>
+    <blockquote><p><strong>参考：</strong><a href="https://easings.net/" target="_blank">easings.net</a> — 缓动函数可视化速查站 · <a href="https://cubic-bezier.com/" target="_blank">cubic-bezier.com</a> — 在线调试器</p></blockquote>
+
+    <h2 class="fade-on-scroll">1.3 迪士尼 12 条动画原则在 UI 中的映射</h2>
+    <div class="table-wrap"><table>
+      <tr><th>#</th><th>原则</th><th>UI 映射</th><th>示例</th></tr>
+      <tr><td>1</td><td>挤压与拉伸</td><td>按钮按压变形、加载动画</td><td>点赞按钮弹跳放大</td></tr>
+      <tr><td>2</td><td>预备动作</td><td>下拉刷新回弹蓄力</td><td>导航返回边缘滑动预览</td></tr>
+      <tr><td>3</td><td>演出布局</td><td>视觉层级引导</td><td>弹窗背景暗化+毛玻璃</td></tr>
+      <tr><td>4</td><td>顺序动画</td><td>元素依次 vs 同时入场</td><td>列表项交错入场（stagger）</td></tr>
+      <tr><td>5</td><td>跟随与重叠</td><td>附属元素惯性延迟</td><td>卡片停止后阴影渐显</td></tr>
+      <tr><td>6</td><td>慢入慢出</td><td>即缓动函数</td><td>所有过渡动画</td></tr>
+      <tr><td>7</td><td>弧线运动</td><td>元素沿弧线移动</td><td>FAB 展开子按钮弧形路径</td></tr>
+      <tr><td>8</td><td>次要动作</td><td>主操作辅助反馈</td><td>点赞后粒子飞散</td></tr>
+      <tr><td>9</td><td>时间节奏</td><td>动画时长选择</td><td>200ms 快速响应 vs 500ms 叙事</td></tr>
+      <tr><td>10</td><td>夸张</td><td>适度超出物理真实</td><td>超级点赞的夸张弹跳</td></tr>
+      <tr><td>11</td><td>扎实绘画</td><td>阴影、深度模拟</td><td>Material Z 轴 elevation</td></tr>
+      <tr><td>12</td><td>吸引力</td><td>情感化设计</td><td>可爱空状态插画动画</td></tr>
+    </table></div>
+
+    <h2 class="fade-on-scroll">1.4 动效分类体系</h2>
+    <div class="table-wrap"><table>
+      <tr><th>类型</th><th>核心目的</th><th>时长建议</th><th>实现难度</th></tr>
+      <tr><td>过渡动效 Transitions</td><td>维持空间连续性</td><td>200–500ms</td><td>⭐⭐</td></tr>
+      <tr><td>反馈动效 Feedback</td><td>确认操作已接收</td><td>100–300ms</td><td>⭐</td></tr>
+      <tr><td>引导动效 Guidance</td><td>降低学习成本</td><td>500–1500ms/步</td><td>⭐⭐⭐</td></tr>
+      <tr><td>沉浸动效 Immersion</td><td>情感与品牌表达</td><td>持续循环</td><td>⭐⭐⭐⭐</td></tr>
+      <tr><td>状态变更 State Change</td><td>表达状态转换</td><td>150–400ms</td><td>⭐⭐</td></tr>
+      <tr><td>加载动效 Loading</td><td>维持注意力</td><td>循环/实时</td><td>⭐⭐</td></tr>
+      <tr><td>微交互 Micro-interactions</td><td>增强操作愉悦感</td><td>100–500ms</td><td>⭐⭐⭐</td></tr>
+      <tr><td>装饰性动效 Decorative</td><td>品牌个性表达</td><td>1–3s</td><td>⭐⭐⭐</td></tr>
+    </table></div>
+    <div class="tip">
+      <p><strong>时长黄金法则（Material Design）：</strong>小型组件 100–200ms，中型变化 200–400ms，大型场景 400–700ms。超过 700ms 用户会感知为"慢"。</p>
+    </div>
+
+    <h2 class="fade-on-scroll">1.5 60fps 与性能</h2>
+    <ul>
+      <li><strong>60fps</strong> = 每帧 16.67ms 预算；<strong>120fps</strong> = 8.33ms</li>
+      <li><strong>核心原则：</strong>只动画 <code>transform</code> 和 <code>opacity</code>（GPU 合成，不触发布局/绘制）</li>
+      <li><strong>避免动画：</strong><code>width/height/margin/top/left</code>（触发 Layout → Paint → Composite）</li>
+      <li><strong>硬件加速：</strong>CSS <code>will-change</code>、iOS <code>shouldRasterize</code>、Android 默认开启</li>
+      <li><strong>Web：</strong>用 <code>requestAnimationFrame</code> 而非 <code>setTimeout/setInterval</code></li>
+      <li><strong>避免布局抖动：</strong>批量读取布局属性，批量写入</li>
+    </ul>
+
+    <h2 class="fade-on-scroll">1.6 学习资源</h2>
+    <h3>书籍</h3>
+    <div class="table-wrap"><table>
+      <tr><th>书名</th><th>作者</th><th>评价</th></tr>
+      <tr><td><a href="https://rosenfeldmedia.com/books/designing-interface-animation/" target="_blank">Designing Interface Animation</a></td><td>Val Head</td><td>UI 动效设计原则，实用性强</td></tr>
+      <tr><td><a href="https://book.microinteractions.com/" target="_blank">Micro-interactions</a></td><td>Dan Saffer</td><td>微交互理论奠基之作</td></tr>
+      <tr><td><a href="https://designthencode.com/" target="_blank">Motion Design for iOS</a></td><td>Mike R. Horn</td><td>iOS 动效实战，含 Swift 代码</td></tr>
+      <tr><td><a href="https://abookapart.com/products/animation-at-work" target="_blank">Animation at Work</a></td><td>Rachel Nabors</td><td>Web 动画实践，含可访问性</td></tr>
+    </table></div>
+
+    <h3>官方文档</h3>
+    <div class="table-wrap"><table>
+      <tr><th>文档</th><th>链接</th></tr>
+      <tr><td>Apple HIG – Motion</td><td><a href="https://developer.apple.com/design/human-interface-guidelines/motion" target="_blank">developer.apple.com</a></td></tr>
+      <tr><td>Material Design – Motion</td><td><a href="https://m3.material.io/styles/motion" target="_blank">m3.material.io</a></td></tr>
+      <tr><td>React Native Reanimated</td><td><a href="https://docs.swmansion.com/react-native-reanimated/" target="_blank">docs.swmansion.com</a></td></tr>
+      <tr><td>Android Compose Animation</td><td><a href="https://developer.android.com/develop/ui/compose/animation" target="_blank">developer.android.com</a></td></tr>
+      <tr><td>CSS Animations – MDN</td><td><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_animations" target="_blank">developer.mozilla.org</a></td></tr>
+    </table></div>
+
+    <div style="margin-top:40px;">
+      <a href="tools.html" style="font-weight:600;">下一章：动效设计工具与平台 →</a>
+    </div>
+
+    <footer class="footer"><p>基于调研报告整理 · 所有外部链接均指向原网站 · 2026</p></footer>
+  </div></main>
+  <script src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+</body>
+</html>

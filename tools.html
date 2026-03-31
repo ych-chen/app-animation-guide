@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工具篇 — App 动画指南</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+<body>
+  <div class="overlay"></div>
+  <aside class="sidebar">
+    <div class="sidebar-header"><a href="index.html"><h2>✨ App 动画指南</h2><p>从原理到实战的完整手册</p></a></div>
+    <nav class="sidebar-nav">
+      <a href="index.html"><span class="icon">🏠</span> 首页</a>
+      <a href="principles.html"><span class="icon">📖</span> 原理篇</a>
+      <a href="tools.html" class="active"><span class="icon">🛠</span> 工具篇</a>
+      <a href="cases.html"><span class="icon">📱</span> 案例篇</a>
+      <a href="react-native.html"><span class="icon">⚛️</span> React Native 篇</a>
+      <a href="delivery.html"><span class="icon">📦</span> 交付篇</a>
+      <a href="advanced.html"><span class="icon">🚀</span> 进阶篇</a>
+    </nav>
+  </aside>
+  <header class="mobile-header">
+    <button class="menu-btn" aria-label="菜单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+    <span style="font-weight:600;font-size:.9rem;">🛠 工具篇</span>
+  </header>
+  <main class="main"><div class="content">
+    <div class="chapter-intro">
+      <span class="badge">第二章</span>
+      <h1>动效设计工具与平台</h1>
+      <p class="page-desc">AE/Lottie、Rive、Principle、Framer 等工具对比，灵感网站推荐，Lottie 工作流详解。</p>
+    </div>
+
+    <h2>2.1 设计工具对比</h2>
+    <div class="table-wrap"><table>
+      <tr><th>工具</th><th>价格</th><th>学习曲线</th><th>导出格式</th><th>RN 支持</th><th>推荐场景</th></tr>
+      <tr><td><strong>After Effects + Lottie</strong></td><td>¥154/月</td><td>⭐⭐⭐⭐⭐</td><td>Lottie JSON / dotLottie / MOV</td><td>✅ 优秀</td><td>复杂动画工业级生产</td></tr>
+      <tr><td><strong>Principle</strong></td><td>$129 买断</td><td>⭐⭐</td><td>MOV / GIF</td><td>❌</td><td>快速验证转场/交互</td></tr>
+      <tr><td><strong>Framer</strong></td><td>Free ~ $15/月</td><td>⭐⭐⭐</td><td>React 组件 / HTML</td><td>⚠️ 需适配</td><td>Web 动效</td></tr>
+      <tr><td><strong>ProtoPie</strong></td><td>$25~67/月</td><td>⭐⭐⭐</td><td>原型 / 视频</td><td>❌</td><td>高保真交互原型</td></tr>
+      <tr><td><strong><a href="https://rive.app/" target="_blank">Rive</a></strong> ⭐</td><td>Free ~ $32/月</td><td>⭐⭐⭐</td><td>.riv 二进制</td><td>✅ 官方支持</td><td>可交互动画/游戏化 UI</td></tr>
+      <tr><td><strong>Haiku</strong></td><td>Free ~ 付费</td><td>⭐⭐</td><td>React/Vue/Swift</td><td>⚠️ 部分</td><td>设计转代码</td></tr>
+      <tr><td><strong>Keynote</strong></td><td>免费</td><td>⭐</td><td>MOV / GIF</td><td>❌</td><td>苹果团队快速概念验证</td></tr>
+    </table></div>
+
+    <h3>重点工具说明</h3>
+    <h4>After Effects + Bodymovin (Lottie)</h4>
+    <p>行业标准动效软件。通过 Bodymovin（现名 <code>aejsx</code>）插件导出 <a href="https://airbnb.io/lottie/" target="_blank">Lottie</a> JSON。</p>
+    <div class="warning">
+      <p><strong>⚠️ Lottie 导出限制：</strong>仅支持形状图层、纯色图层、图片图层和文字图层基本属性。遮罩/混合模式部分支持。特效（模糊、发光）和第三方插件效果<strong>不导出</strong>。</p>
+    </div>
+
+    <h4>Rive ⭐ 推荐关注</h4>
+    <p>新一代交互式动画工具，定位为"Lottie 的进化版"。支持状态机、事件系统和实时交互，运行时 &lt; 5MB。支持 Unity/Unreal/Flutter/RN。</p>
+
+    <h3>工具选择建议</h3>
+    <div class="table-wrap"><table>
+      <tr><th>项目阶段</th><th>推荐工具</th><th>理由</th></tr>
+      <tr><td>概念验证</td><td>Keynote / Principle</td><td>最快出效果</td></tr>
+      <tr><td>高保真原型</td><td>ProtoPie / Framer</td><td>接近最终体验</td></tr>
+      <tr><td>生产动画</td><td>AE + Lottie / Rive</td><td>导出可用资产</td></tr>
+      <tr><td>简单微交互</td><td>Reanimated 直接编码</td><td>代码可控，性能最优</td></tr>
+    </table></div>
+
+    <h2 class="fade-on-scroll">2.2 灵感网站</h2>
+    <div class="card-grid">
+      <a href="https://lottiefiles.com/" target="_blank" class="card"><h4>LottieFiles ⭐⭐⭐</h4><p>最大 Lottie 动画市场，在线编辑/测试</p></a>
+      <a href="https://www.awwwards.com/websites/animation/" target="_blank" class="card"><h4>Awwwards</h4><p>网页动效顶级灵感来源</p></a>
+      <a href="https://dribbble.com/search/motion-design" target="_blank" class="card"><h4>Dribbble</h4><p>设计师作品分享，快速灵感</p></a>
+      <a href="https://www.behance.net/search/projects?field=animation" target="_blank" class="card"><h4>Behance</h4><p>完整项目案例，含设计过程</p></a>
+      <a href="https://mobbin.com/" target="_blank" class="card"><h4>Mobbin</h4><p>真实 App 界面和交互录制</p></a>
+      <a href="https://tympanus.net/codrops" target="_blank" class="card"><h4>Codrops</h4><p>前沿动效教程+源码</p></a>
+    </div>
+
+    <h2 class="fade-on-scroll">2.3 Lottie 工作流详解</h2>
+    <h3>工作原理</h3>
+    <div class="flow">
+      <span class="flow-step">After Effects</span><span class="flow-arrow">→</span>
+      <span class="flow-step">Bodymovin 插件</span><span class="flow-arrow">→</span>
+      <span class="flow-step">Lottie JSON</span><span class="flow-arrow">→</span>
+      <span class="flow-step">iOS / Android / Web / RN</span>
+    </div>
+    <ul>
+      <li><strong>Lottie JSON：</strong>矢量动画描述格式，体积仅 GIF/APNG 的 1/10~1/100</li>
+      <li><strong>dotLottie：</strong>新一代格式，JSON + 图片打包为单文件，压缩更小</li>
+      <li><strong>运行时：</strong>各平台原生渲染器，实时矢量渲染，缩放不失真</li>
+    </ul>
+
+    <h3>React Native 接入 Lottie</h3>
+    <pre><code class="language-jsx">import LottieView from 'lottie-react-native';
+
+// 基础用法
+&lt;LottieView
+  source={require('./assets/loading.json')}
+  autoPlay
+  loop
+  style={{ width: 200, height: 200 }}
+/&gt;
+
+// 控制播放
+const animRef = useRef(null);
+animRef.current?.play(0, 60);  // 播放帧范围
+animRef.current?.pause();</code></pre>
+
+    <h2 class="fade-on-scroll">2.4 资源管理最佳实践</h2>
+    <p><strong>推荐目录结构：</strong></p>
+    <pre><code class="language-plaintext">assets/
+  animations/
+    ├── lottie/          # Lottie JSON 文件
+    ├── rive/            # Rive .riv 文件
+    └── sequences/       # 序列帧（Git LFS 管理）</code></pre>
+    <p><strong>命名规范：</strong><code>{场景}-{组件}-{状态/动作}.json</code>（如 <code>home-loading-spinner.json</code>）</p>
+
+    <h3>动画参数 Token 示例</h3>
+    <pre><code class="language-typescript">export const animationTokens = {
+  duration: { instant: 100, fast: 200, normal: 300, slow: 500 },
+  easing: {
+    default: 'cubic-bezier(0.25, 0.1, 0.25, 1)',
+    enter: 'cubic-bezier(0.0, 0.0, 0.2, 1)',
+    exit: 'cubic-bezier(0.4, 0.0, 1, 1)',
+    spring: { damping: 12, stiffness: 100 },
+  },
+};</code></pre>
+
+    <h2 class="fade-on-scroll">2.5 开源动画库推荐</h2>
+    <div class="table-wrap"><table>
+      <tr><th>库名</th><th>平台</th><th>特点</th></tr>
+      <tr><td><a href="https://github.com/software-mansion/react-native-reanimated" target="_blank">React Native Reanimated</a></td><td>RN</td><td>高性能动画核心库</td></tr>
+      <tr><td><a href="https://github.com/lottie-react-native/lottie-react-native" target="_blank">lottie-react-native</a></td><td>RN</td><td>AE 动画矢量渲染</td></tr>
+      <tr><td><a href="https://rive.app/" target="_blank">Rive</a></td><td>全平台</td><td>可交互动画+状态机</td></tr>
+      <tr><td><a href="https://github.com/Shopify/react-native-skia" target="_blank">react-native-skia</a></td><td>RN</td><td>2D 高性能自定义绘制</td></tr>
+      <tr><td>GSAP</td><td>Web</td><td>最强大的 Web 动画库</td></tr>
+      <tr><td>Framer Motion</td><td>Web/React</td><td>声明式 React 动画</td></tr>
+      <tr><td>react-native-animatable</td><td>RN</td><td>预置动画集合</td></tr>
+    </table></div>
+
+    <div style="margin-top:40px;display:flex;justify-content:space-between;">
+      <a href="principles.html" style="font-weight:600;">← 上一章：动画基本原理</a>
+      <a href="cases.html" style="font-weight:600;">下一章：优秀 App 动效案例 →</a>
+    </div>
+    <footer class="footer"><p>基于调研报告整理 · 所有外部链接均指向原网站 · 2026</p></footer>
+  </div></main>
+  <script src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+</body>
+</html>

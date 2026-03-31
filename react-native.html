@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Native 篇 — App 动画指南</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+<body>
+  <div class="overlay"></div>
+  <aside class="sidebar">
+    <div class="sidebar-header"><a href="index.html"><h2>✨ App 动画指南</h2><p>从原理到实战的完整手册</p></a></div>
+    <nav class="sidebar-nav">
+      <a href="index.html"><span class="icon">🏠</span> 首页</a>
+      <a href="principles.html"><span class="icon">📖</span> 原理篇</a>
+      <a href="tools.html"><span class="icon">🛠</span> 工具篇</a>
+      <a href="cases.html"><span class="icon">📱</span> 案例篇</a>
+      <a href="react-native.html" class="active"><span class="icon">⚛️</span> React Native 篇</a>
+      <a href="delivery.html"><span class="icon">📦</span> 交付篇</a>
+      <a href="advanced.html"><span class="icon">🚀</span> 进阶篇</a>
+    </nav>
+  </aside>
+  <header class="mobile-header">
+    <button class="menu-btn" aria-label="菜单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+    <span style="font-weight:600;font-size:.9rem;">⚛️ React Native 篇</span>
+  </header>
+  <main class="main"><div class="content">
+    <div class="chapter-intro">
+      <span class="badge">第五章</span>
+      <h1>React Native 动效深入</h1>
+      <p class="page-desc">Reanimated 核心架构、手势动画、布局动画、共享元素过渡、页面切换、RN vs 原生对比。</p>
+    </div>
+
+    <h2>5.1 RN 动效生态</h2>
+    <div class="table-wrap"><table>
+      <tr><th>库</th><th>定位</th><th>推荐</th></tr>
+      <tr><td>内置 Animated API</td><td>简单场景</td><td>⚠️ 新项目用 Reanimated</td></tr>
+      <tr><td><strong><a href="https://docs.swmansion.com/react-native-reanimated/" target="_blank">react-native-reanimated</a></strong> ⭐</td><td>动画核心</td><td><strong>必装</strong></td></tr>
+      <tr><td>react-native-gesture-handler</td><td>手势识别</td><td><strong>必装</strong></td></tr>
+      <tr><td><a href="https://github.com/lottie-react-native/lottie-react-native" target="_blank">lottie-react-native</a></td><td>AE 动画渲染</td><td>设计师产出动画时必装</td></tr>
+      <tr><td><a href="https://github.com/Shopify/react-native-skia" target="_blank">react-native-skia</a></td><td>高性能 2D 绘制</td><td>图表/粒子/自定义绘制</td></tr>
+      <tr><td>Moti</td><td>Reanimated 简化封装</td><td>简单动画快速实现</td></tr>
+    </table></div>
+
+    <h2 class="fade-on-scroll">5.2 Reanimated 核心</h2>
+    <h3>架构：JS 线程 vs UI 线程</h3>
+    <div class="flow">
+      <span class="flow-step">JS 线程（React 渲染/业务逻辑）</span>
+      <span class="flow-arrow">⇄ SharedValue</span>
+      <span class="flow-step">UI 线程（动画计算/手势/样式更新）</span>
+    </div>
+    <p>Reanimated 将动画逻辑编译为 <strong>Worklet</strong> 运行在 UI 线程。即使 JS 线程忙，动画依然 60fps。</p>
+
+    <h3>核心 API</h3>
+    <pre><code class="language-typescript">// SharedValue — 跨线程共享的响应式值
+const x = useSharedValue(0);
+
+// AnimatedStyle — 绑定到样式
+const style = useAnimatedStyle(() => ({
+  transform: [{ translateX: x.value }],
+}));
+
+// 动画函数
+x.value = withTiming(100, { duration: 300, easing: Easing.bezier(0.25, 0.1, 0.25, 1) });
+x.value = withSpring(100, { damping: 10, stiffness: 100, mass: 1 });
+x.value = withDecay({ velocity: gestureVelocity, deceleration: 0.998 });
+x.value = withSequence(withTiming(50), withSpring(100));
+x.value = withRepeat(withTiming(1, { duration: 1000 }), -1, true); // 无限循环</code></pre>
+
+    <h2 class="fade-on-scroll">5.3 手势动画（最核心的实战模式）</h2>
+    <pre><code class="language-typescript">import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSharedValue, useAnimatedStyle, withSpring, runOnJS } from 'react-native-reanimated';
+
+function DraggableCard({ onSwipe }) {
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+
+  const pan = Gesture.Pan()
+    .onUpdate((e) => {
+      translateX.value = e.translationX;
+      translateY.value = e.translationY;
+    })
+    .onEnd(() => {
+      if (Math.abs(translateX.value) > 120) {
+        translateX.value = withTiming(translateX.value > 0 ? SCREEN_WIDTH : -SCREEN_WIDTH);
+        runOnJS(onSwipe)(translateX.value > 0 ? 'right' : 'left');
+      } else {
+        translateX.value = withSpring(0);
+        translateY.value = withSpring(0);
+      }
+    });
+
+  const style = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }, { translateY: translateY.value }],
+  }));
+
+  return (
+    &lt;GestureDetector gesture={pan}&gt;
+      &lt;Animated.View style={[styles.card, style]} /&gt;
+    &lt;/GestureDetector&gt;
+  );
+}</code></pre>
+
+    <h2 class="fade-on-scroll">5.4 布局动画</h2>
+    <pre><code class="language-typescript">import { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
+
+&lt;Animated.View
+  entering={FadeIn.duration(300)}
+  exiting={FadeOut.duration(200)}
+  layout={Layout.springify()}
+&gt;
+  &lt;TodoItem /&gt;
+&lt;/Animated.View&gt;</code></pre>
+    <p><strong>内置预设：</strong>FadeIn/Out、SlideIn(Up/Down/Left/Right)、ZoomIn/Out、BounceIn/Out、Layout</p>
+
+    <h2 class="fade-on-scroll">5.5 共享元素过渡（Hero Animation）</h2>
+    <pre><code class="language-typescript">import { SharedTransition, withSpring } from 'react-native-reanimated';
+
+const transition = SharedTransition.custom((values) => {
+  'worklet';
+  return {
+    height: withSpring(values.targetHeight),
+    width: withSpring(values.targetWidth),
+    originX: withSpring(values.targetOriginX),
+    originY: withSpring(values.targetOriginY),
+  };
+});
+
+// 列表页
+&lt;Animated.Image sharedTransitionTag={`photo-${id}`} sharedTransitionStyle={transition} /&gt;
+
+// 详情页
+&lt;Animated.Image sharedTransitionTag={`photo-${id}`} sharedTransitionStyle={transition} /&gt;</code></pre>
+    <div class="tip"><p><strong>要求：</strong>React Navigation 6+ + <code>react-native-screens</code>，两端 tag 必须一致。</p></div>
+
+    <h2 class="fade-on-scroll">5.6 页面切换动画</h2>
+    <pre><code class="language-typescript">import { CardStyleInterpolators } from '@react-navigation/stack';
+
+// 内置预设
+cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS    // iOS 风格
+cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS // iOS 13+ Modal
+cardStyleInterpolator: CardStyleInterpolators.forFadeFromBottomAndroid // Android 淡入</code></pre>
+
+    <h2 class="fade-on-scroll">5.7 RN vs 原生对比</h2>
+    <h3>性能</h3>
+    <div class="table-wrap"><table>
+      <tr><th>维度</th><th>RN (Reanimated)</th><th>iOS (SwiftUI)</th><th>Android (Compose)</th></tr>
+      <tr><td>60fps</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      <tr><td>120fps</td><td>⚠️ 受调度限制</td><td>✅</td><td>⚠️</td></tr>
+      <tr><td>复杂粒子</td><td>❌</td><td>✅ (Metal)</td><td>✅ (Vulkan)</td></tr>
+      <tr><td>共享元素</td><td>✅</td><td>✅</td><td>✅</td></tr>
+      <tr><td>手势联动</td><td>✅ 丝滑</td><td>✅</td><td>✅</td></tr>
+    </table></div>
+
+    <h3>何时够用 vs 何时写原生</h3>
+    <div class="tip">
+      <p><strong>RN 足以应对（90% 需求）：</strong>页面过渡、列表动画、手势交互动画、Bottom Sheet、Lottie、布局动画</p>
+      <p><strong>需原生模块：</strong>高性能粒子系统、3D 动画、视频实时滤镜、自定义导航容器、120fps 精确控制</p>
+    </div>
+
+    <h2 class="fade-on-scroll">5.8 性能最佳实践</h2>
+    <ol>
+      <li><strong>永远用 SharedValue，不要用 state 驱动动画</strong>（避免每帧 re-render）</li>
+      <li><strong>避免 Worklet 中的重计算</strong>（会阻塞 UI 线程）</li>
+      <li><strong>列表动画用 CellRendererComponent</strong></li>
+      <li><strong>及时清理动画</strong>（<code>cancelAnimation</code>）</li>
+      <li><strong>用 <code>runOnJS</code> 桥接 JS 函数调用</strong>（不要在 UI 线程直接调 JS 函数）</li>
+    </ol>
+
+    <div style="margin-top:40px;display:flex;justify-content:space-between;">
+      <a href="cases.html" style="font-weight:600;">← 上一章：优秀 App 动效案例</a>
+      <a href="delivery.html" style="font-weight:600;">下一章：动效交付流程 →</a>
+    </div>
+    <footer class="footer"><p>基于调研报告整理 · 所有外部链接均指向原网站 · 2026</p></footer>
+  </div></main>
+  <script src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+</body>
+</html>

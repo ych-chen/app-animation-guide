@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>进阶篇 — App 动画指南</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+<body>
+  <div class="overlay"></div>
+  <aside class="sidebar">
+    <div class="sidebar-header"><a href="index.html"><h2>✨ App 动画指南</h2><p>从原理到实战的完整手册</p></a></div>
+    <nav class="sidebar-nav">
+      <a href="index.html"><span class="icon">🏠</span> 首页</a>
+      <a href="principles.html"><span class="icon">📖</span> 原理篇</a>
+      <a href="tools.html"><span class="icon">🛠</span> 工具篇</a>
+      <a href="cases.html"><span class="icon">📱</span> 案例篇</a>
+      <a href="react-native.html"><span class="icon">⚛️</span> React Native 篇</a>
+      <a href="delivery.html"><span class="icon">📦</span> 交付篇</a>
+      <a href="advanced.html" class="active"><span class="icon">🚀</span> 进阶篇</a>
+    </nav>
+  </aside>
+  <header class="mobile-header">
+    <button class="menu-btn" aria-label="菜单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+    <span style="font-weight:600;font-size:.9rem;">🚀 进阶篇</span>
+  </header>
+  <main class="main"><div class="content">
+    <div class="chapter-intro">
+      <span class="badge">进阶</span>
+      <h1>无障碍、Design Token 与跨平台</h1>
+      <p class="page-desc">无障碍动效适配、Motion Token 体系、A/B 测试方法论、Flutter 对比、触觉反馈、Web 与移动端差异。</p>
+    </div>
+
+    <h2>1. 无障碍（Accessibility）与动效</h2>
+
+    <h3>prefers-reduced-motion</h3>
+    <div class="table-wrap"><table>
+      <tr><th>平台</th><th>API</th><th>行为</th></tr>
+      <tr><td>Web / RN Web</td><td><code>@media (prefers-reduced-motion: reduce)</code></td><td>用户开启系统"减少动态效果"后匹配</td></tr>
+      <tr><td>iOS</td><td><code>UIAccessibility.isReduceMotionEnabled</code></td><td>设置 → 辅助功能 → 减弱动态效果</td></tr>
+      <tr><td>Android</td><td><code>AccessibilityManager.isReduceMotionEnabled</code> (API 31+)</td><td>开发者选项 → 动画缩放设为 0</td></tr>
+      <tr><td>RN (Reanimated)</td><td>目前无内置 API，需通过 Native Module 桥接</td><td>—</td></tr>
+    </table></div>
+
+    <h4>实践策略</h4>
+    <pre><code class="language-typescript">// Web / RN Web
+const prefersReducedMotion = typeof window !== 'undefined'
+  ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  : false;
+
+// 动画降级策略
+const duration = prefersReducedMotion ? 0 : 300;
+const scale = prefersReducedMotion ? 1 : withSpring(1.05);</code></pre>
+
+    <pre><code class="language-css">/* CSS 降级 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}</code></pre>
+
+    <h3>WCAG 与动效相关指南</h3>
+    <ul>
+      <li><strong>WCAG 2.3.1：</strong>页面不应包含每秒闪烁超过 3 次的内容</li>
+      <li><strong>WCAG 2.2 新增 2.3.2：</strong>非功能性动画应可暂停/关闭</li>
+      <li><strong>建议：</strong>所有装饰性动画提供关闭入口；功能性动画降级为瞬间切换</li>
+    </ul>
+
+    <h3>Lottie 无障碍</h3>
+    <pre><code class="language-jsx">&lt;LottieView
+  source={require('./loading.json')}
+  autoPlay
+  loop
+  accessibilityLabel="正在加载"
+  accessibilityRole="image"
+/&gt;</code></pre>
+
+    <h2 class="fade-on-scroll">2. Motion Token 体系</h2>
+
+    <h3>Token 层级</h3>
+    <div class="flow">
+      <span class="flow-step">Foundation（基础）</span><span class="flow-arrow">→</span>
+      <span class="flow-step">Semantic（语义）</span><span class="flow-arrow">→</span>
+      <span class="flow-step">Component（组件）</span>
+    </div>
+    <p>Foundation：<code>duration.scale.fast</code> / <code>easing.standard</code><br>
+    Semantic：<code>motion.enter</code> / <code>motion.exit</code> / <code>motion.emphasis</code><br>
+    Component：<code>button.press.scale</code> / <code>card.expand.duration</code></p>
+
+    <h4>Foundation 示例</h4>
+    <pre><code class="language-typescript">// tokens/motion.ts
+export const motion = {
+  duration: {
+    instant: 0,        // reduced-motion 降级
+    fast: 100,         // 微交互（按钮反馈）
+    normal: 200,       // 标准过渡
+    moderate: 300,     // 页面切换
+    slow: 500,         // 复杂场景
+  },
+  easing: {
+    standard: [0.25, 0.1, 0.25, 1],
+    decelerate: [0.0, 0.0, 0.2, 1],
+    accelerate: [0.4, 0.0, 1, 1],
+    emphasis: { damping: 12, stiffness: 100 },
+  },
+  spring: {
+    gentle: { damping: 20, stiffness: 80 },
+    bouncy: { damping: 10, stiffness: 150 },
+    stiff: { damping: 30, stiffness: 300 },
+  },
+} as const;</code></pre>
+
+    <h3>跨平台 Token 同步</h3>
+    <div class="table-wrap"><table>
+      <tr><th>方案</th><th>说明</th></tr>
+      <tr><td><a href="https://amzn.github.io/style-dictionary/" target="_blank">Style Dictionary</a></td><td>Adobe 开源，可将 Token 编译为多平台输出（TS/CSS/Swift/Kotlin）</td></tr>
+      <tr><td>Tokens Studio (Figma 插件)</td><td>设计师在 Figma 中维护 Token，同步到代码仓库</td></tr>
+      <tr><td>Figma Variables</td><td>Figma 原生变量系统，可通过 REST API 导出</td></tr>
+    </table></div>
+
+    <h2 class="fade-on-scroll">3. 动效 A/B 测试方法论</h2>
+
+    <h3>可测试的动效指标</h3>
+    <div class="table-wrap"><table>
+      <tr><th>指标</th><th>定义</th><th>工具</th></tr>
+      <tr><td>任务完成率</td><td>用户完成目标操作的比例</td><td>Analytics 埋点</td></tr>
+      <tr><td>任务完成时间</td><td>从进入页面到完成操作的时长</td><td>时间戳差值</td></tr>
+      <tr><td>错误率</td><td>因动效导致的误操作次数</td><td>行为追踪</td></tr>
+      <tr><td>感知性能</td><td>用户主观评分</td><td>用户调研 / NPS</td></tr>
+      <tr><td>转化率</td><td>动效影响的核心业务指标</td><td>A/B 平台</td></tr>
+      <tr><td>帧率</td><td>客观性能指标</td><td>Perf Monitor / Flipper</td></tr>
+    </table></div>
+
+    <h3>A/B 测试框架</h3>
+    <pre><code class="language-typescript">interface AnimationVariant {
+  name: string;
+  duration: number;
+  easing: number[];
+  springConfig?: { damping: number; stiffness: number };
+}
+
+const variants: Record&lt;string, AnimationVariant&gt; = {
+  control: { name: 'control', duration: 300, easing: [0.25, 0.1, 0.25, 1] },
+  faster: { name: 'faster', duration: 150, easing: [0.25, 0.1, 0.25, 1] },
+  springy: { name: 'springy', duration: 0, easing: [], springConfig: { damping: 10, stiffness: 150 } },
+};
+
+const variant = await getABTestVariant('onboarding_animation');
+const config = variants[variant];</code></pre>
+
+    <h3>注意事项</h3>
+    <ul>
+      <li>动效 A/B 测试需要足够样本量（建议 ≥5000/组）</li>
+      <li>区分<strong>功能动效</strong>和<strong>装饰动效</strong></li>
+      <li>注意<strong>新奇效应</strong>：新动效初期表现好可能只是因为新鲜感</li>
+    </ul>
+
+    <h2 class="fade-on-scroll">4. Flutter 动效生态简要对比</h2>
+    <div class="table-wrap"><table>
+      <tr><th>维度</th><th>React Native (Reanimated)</th><th>Flutter</th></tr>
+      <tr><td>动画核心</td><td>Reanimated (Worklet/SharedValue)</td><td><code>AnimationController</code> + <code>Tween</code></td></tr>
+      <tr><td>隐式动画</td><td>Moti / Layout presets</td><td><code>AnimatedContainer</code> 等内置 Widget</td></tr>
+      <tr><td>弹簧动画</td><td><code>withSpring</code></td><td><code>SpringSimulation</code></td></tr>
+      <tr><td>手势+动画</td><td>react-native-gesture-handler</td><td>内置 GestureDetector</td></tr>
+      <tr><td>Hero 过渡</td><td>SharedTransition</td><td>Hero widget（更成熟）</td></tr>
+      <tr><td>自定义绘制</td><td>react-native-skia</td><td>CustomPainter（内置）</td></tr>
+    </table></div>
+    <div class="tip">
+      <p><strong>Flutter 优势：</strong>内置隐式动画 Widget 开箱即用、CustomPainter 无需额外依赖、60fps 更容易保证、Hero 过渡更成熟。</p>
+      <p><strong>Flutter 不足：</strong>设计工具→代码链路不如 Lottie 成熟、社区动效资源较少。</p>
+    </div>
+
+    <h2 class="fade-on-scroll">5. Web 与移动端动效差异</h2>
+    <div class="table-wrap"><table>
+      <tr><th>维度</th><th>Web</th><th>移动端</th></tr>
+      <tr><td>输入方式</td><td>鼠标 hover/click 为主</td><td>触摸手势为主</td></tr>
+      <tr><td>GPU 合成</td><td>浏览器管理，<code>will-change</code> 间接控制</td><td>直接控制 CALayer/RenderNode</td></tr>
+      <tr><td>帧率保证</td><td>受浏览器标签页后台节流影响</td><td>前台 App 有更高优先级</td></tr>
+      <tr><td>触觉反馈</td><td>无</td><td>Haptic Feedback</td></tr>
+      <tr><td>滚动性能</td><td>scroll 事件在主线程</td><td>原生滚动由系统处理</td></tr>
+    </table></div>
+
+    <h2 class="fade-on-scroll">6. 触觉反馈（Haptics）</h2>
+    <div class="table-wrap"><table>
+      <tr><th>平台</th><th>API</th><th>类型</th></tr>
+      <tr><td>iOS</td><td><code>UIImpactFeedbackGenerator</code></td><td>轻触/中击/重击/成功/警告/错误</td></tr>
+      <tr><td>Android</td><td><code>HapticFeedbackConstants</code></td><td>点击/长按/纹理</td></tr>
+      <tr><td>RN</td><td><code>expo-haptics</code></td><td>封装原生 API</td></tr>
+    </table></div>
+    <div class="tip"><p><strong>配合原则：</strong>触觉反馈应与视觉动效<strong>同时触发</strong>（&lt; 5ms 偏差），在动效的关键帧施加触觉信号。</p></div>
+
+    <h2 class="fade-on-scroll">7. 动效性能监控</h2>
+    <div class="table-wrap"><table>
+      <tr><th>工具</th><th>平台</th><th>用途</th></tr>
+      <tr><td>React Native Perf Monitor</td><td>RN</td><td>内置 FPS 监控</td></tr>
+      <tr><td>Flipper</td><td>RN</td><td>深度性能分析</td></tr>
+      <tr><td>React DevTools Profiler</td><td>RN/Web</td><td>组件渲染性能</td></tr>
+      <tr><td>Chrome DevTools Performance</td><td>Web</td><td>帧分析、Layout/Paint 耗时</td></tr>
+      <tr><td>Xcode Instruments</td><td>iOS</td><td>离屏渲染、帧率</td></tr>
+      <tr><td>Android Profiler</td><td>Android</td><td>GPU/CPU/内存</td></tr>
+    </table></div>
+
+    <h2 class="fade-on-scroll">8. 补充阅读</h2>
+    <div class="table-wrap"><table>
+      <tr><th>主题</th><th>资源</th></tr>
+      <tr><td>无障碍动效</td><td><a href="https://www.w3.org/WAI/WCAG22/Understanding/" target="_blank">WCAG 2.2 Understanding</a></td></tr>
+      <tr><td>Design Token</td><td><a href="https://amzn.github.io/style-dictionary/" target="_blank">Style Dictionary</a></td></tr>
+      <tr><td>Motion Token</td><td><a href="https://m3.material.io/styles/motion/" target="_blank">Material Design 3 Motion</a></td></tr>
+      <tr><td>Flutter 动画</td><td><a href="https://docs.flutter.dev/ui/animations" target="_blank">Flutter Animation Docs</a></td></tr>
+      <tr><td>触觉反馈设计</td><td><a href="https://developer.apple.com/design/human-interface-guidelines/haptics" target="_blank">Apple Haptics Guidelines</a></td></tr>
+      <tr><td>prefers-reduced-motion</td><td><a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion" target="_blank">MDN Web Docs</a></td></tr>
+      <tr><td>Scroll-driven Animations</td><td><a href="https://developer.chrome.com/docs/css-ui/scroll-driven-animations" target="_blank">Chrome Developers</a></td></tr>
+    </table></div>
+
+    <div style="margin-top:40px;">
+      <a href="delivery.html" style="font-weight:600;">← 上一章：动效交付流程</a>
+      <span style="margin-left:16px;font-weight:600;color:var(--color-text-secondary);">📚 完结 · 返回 <a href="index.html">首页</a></span>
+    </div>
+    <footer class="footer"><p>基于调研报告整理 · 所有外部链接均指向原网站 · 2026</p></footer>
+  </div></main>
+  <script src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+</body>
+</html>

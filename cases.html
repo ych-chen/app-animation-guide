@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>案例篇 — App 动画指南</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+</head>
+<body>
+  <div class="overlay"></div>
+  <aside class="sidebar">
+    <div class="sidebar-header"><a href="index.html"><h2>✨ App 动画指南</h2><p>从原理到实战的完整手册</p></a></div>
+    <nav class="sidebar-nav">
+      <a href="index.html"><span class="icon">🏠</span> 首页</a>
+      <a href="principles.html"><span class="icon">📖</span> 原理篇</a>
+      <a href="tools.html"><span class="icon">🛠</span> 工具篇</a>
+      <a href="cases.html" class="active"><span class="icon">📱</span> 案例篇</a>
+      <a href="react-native.html"><span class="icon">⚛️</span> React Native 篇</a>
+      <a href="delivery.html"><span class="icon">📦</span> 交付篇</a>
+      <a href="advanced.html"><span class="icon">🚀</span> 进阶篇</a>
+    </nav>
+  </aside>
+  <header class="mobile-header">
+    <button class="menu-btn" aria-label="菜单"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+    <span style="font-weight:600;font-size:.9rem;">📱 案例篇</span>
+  </header>
+  <main class="main"><div class="content">
+    <div class="chapter-intro">
+      <span class="badge">第三章</span>
+      <h1>优秀 App 动效案例</h1>
+      <p class="page-desc">Apple Music、Discord、Pinterest 等标杆案例深度分析，GitHub 仓库推荐，从设计到代码的完整链路。</p>
+    </div>
+
+    <h2>3.1 标杆案例</h2>
+
+    <h3>Apple Music（iOS 原生）</h3>
+    <div class="table-wrap"><table>
+      <tr><th>项目</th><th>内容</th></tr>
+      <tr><td>动效类型</td><td>共享元素过渡、全屏播放器展开/收起、专辑封面旋转</td></tr>
+      <tr><td>实现方式</td><td>SwiftUI <code>matchedGeometryEffect</code> + <code>UIViewPropertyAnimator</code></td></tr>
+      <tr><td>亮点</td><td>从迷你播放器到全屏播放器的无缝过渡，封面平滑变形，可交互式中断</td></tr>
+    </table></div>
+    <pre><code class="language-swift">// SwiftUI 共享过渡核心代码
+@Namespace var albumArtNamespace
+Image("album")
+    .matchedGeometryEffect(id: "albumArt", in: albumArtNamespace)</code></pre>
+
+    <h3>Discord（React Native）⭐ RN 标杆</h3>
+    <div class="table-wrap"><table>
+      <tr><th>项目</th><th>内容</th></tr>
+      <tr><td>动效类型</td><td>侧滑抽屉、消息列表滚动、底部 Sheet、shimmer 效果</td></tr>
+      <tr><td>实现方式</td><td><code>react-native-reanimated</code> + <code>react-native-gesture-handler</code>，动画全部运行在 UI 线程</td></tr>
+      <tr><td>亮点</td><td>RN 性能优化标杆，60fps 复杂交互，证明 RN 可以做出原生级动效</td></tr>
+    </table></div>
+    <pre><code class="language-typescript">// Discord 典型模式：手势 + 弹簧动画
+const panGesture = Gesture.Pan()
+  .onUpdate((e) => { translateX.value = e.translationX; })
+  .onEnd(() => {
+    translateX.value = withSpring(0); // 或 withSpring(-MAX_WIDTH)
+  });</code></pre>
+    <p>详见：<a href="https://discord.com/blog/how-discord-achieves-native-ios-performance-with-react-native" target="_blank">Discord RN 性能博客</a></p>
+
+    <h3>Pinterest（React Native）</h3>
+    <div class="table-wrap"><table>
+      <tr><th>项目</th><th>内容</th></tr>
+      <tr><td>动效类型</td><td>瀑布流列表动画、Pin 详情共享元素过渡、保存按钮动画</td></tr>
+      <tr><td>实现方式</td><td>Reanimated staggered animation + 自定义 Shared Transition</td></tr>
+      <tr><td>亮点</td><td>瀑布流布局+丰富动画从不卡顿</td></tr>
+    </table></div>
+
+    <h3>Google Wallet（Android 原生）</h3>
+    <div class="table-wrap"><table>
+      <tr><th>项目</th><th>内容</th></tr>
+      <tr><td>动效类型</td><td>卡片翻转、NFC 支付涟漪、卡片堆叠选择</td></tr>
+      <tr><td>实现方式</td><td>Jetpack Compose + Material Design 3 Motion</td></tr>
+      <tr><td>亮点</td><td>MD3 Motion 教科书实现，动效服务于功能确认</td></tr>
+    </table></div>
+
+    <h2 class="fade-on-scroll">3.2 从设计到代码的完整链路</h2>
+    <div class="flow">
+      <span class="flow-step">Figma/AE 设计</span><span class="flow-arrow">→</span>
+      <span class="flow-step">对齐参数</span><span class="flow-arrow">→</span>
+      <span class="flow-step">选择实现方式</span><span class="flow-arrow">→</span>
+      <span class="flow-step">编码+调试</span>
+    </div>
+    <ol>
+      <li><strong>设计师在 Figma/AE 中制作动效原型</strong></li>
+      <li><strong>对齐参数：</strong>缓动曲线、时长、延迟</li>
+      <li><strong>选择实现方式：</strong>
+        <ul>
+          <li>简单过渡 → Reanimated <code>withTiming</code>/<code>withSpring</code></li>
+          <li>复杂矢量动画 → <a href="https://airbnb.io/lottie/" target="_blank">Lottie JSON</a></li>
+          <li>交互动画 → Reanimated + Gesture Handler</li>
+        </ul>
+      </li>
+      <li><strong>编码实现 → 真机对比调试 → 性能测试 → 迭代修改</strong></li>
+    </ol>
+    <div class="tip"><p><strong>关键实践：</strong>将时长、缓动曲线、延迟提取为常量集中管理，方便调整。</p></div>
+
+    <h2 class="fade-on-scroll">3.3 GitHub 仓库推荐</h2>
+    <div class="card-grid">
+      <a href="https://github.com/software-mansion/react-native-reanimated" target="_blank" class="card">
+        <h4>react-native-reanimated</h4>
+        <p>⭐ ~9k+ — RN 动画核心库，生产必装</p>
+      </a>
+      <a href="https://github.com/Shopify/react-native-skia" target="_blank" class="card">
+        <h4>react-native-skia</h4>
+        <p>⭐ ~7k+ — 高性能 2D 绘制+动画</p>
+      </a>
+      <a href="https://github.com/lottie-react-native/lottie-react-native" target="_blank" class="card">
+        <h4>lottie-react-native</h4>
+        <p>⭐ ~16k+ — Lottie JSON 渲染</p>
+      </a>
+      <a href="https://github.com/software-mansion/react-native-gesture-handler" target="_blank" class="card">
+        <h4>react-native-gesture-handler</h4>
+        <p>手势识别，与 Reanimated 配合</p>
+      </a>
+    </div>
+
+    <div style="margin-top:40px;display:flex;justify-content:space-between;">
+      <a href="tools.html" style="font-weight:600;">← 上一章：动效设计工具</a>
+      <a href="react-native.html" style="font-weight:600;">下一章：React Native 动效深入 →</a>
+    </div>
+    <footer class="footer"><p>基于调研报告整理 · 所有外部链接均指向原网站 · 2026</p></footer>
+  </div></main>
+  <script src="main.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-swift.min.js"></script>
+</body>
+</html>
